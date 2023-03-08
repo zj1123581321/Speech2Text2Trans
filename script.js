@@ -63,8 +63,18 @@ translateBtn.addEventListener('click', async () => {
     return;
   }
   
-  // 从文件上传控件中获取音频文件
+  //https://platform.openai.com/docs/guides/speech-to-text
+  // 从文件上传控件中获取文件,File uploads are currently limited to 25 MB and the following input file types are supported: mp3, mp4, mpeg, mpga, m4a, wav, and webm.
   const file = fileUpload.files[0];
+  if (!file) {
+  alert('请选择一个音视频文件！');
+  return;
+  }
+  
+  if (file.size > 25 * 1024 * 1024) {
+  alert('文件大小不能超过 25MB！');
+  return;
+  }
 
   // 调用 openai 和 google translate 完成音频翻译
   const transcription = await transcribeAudio(apiKey, file);
