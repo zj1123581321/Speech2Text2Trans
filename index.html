@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>音频翻译</title>
+    <!-- 引入style.css -->
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>音频翻译</h1>
+    <label for="api-key-input">输入 API key：</label>
+    <input type="text" id="api-key-input" placeholder="输入您的 API key">
+    <button id="save-api-key-btn">保存 API key</button>
+    <br>
+    <input type="file" id="file-upload">
+    <button id="translate-btn">翻译</button>
+    <h2>英文转写结果：</h2>
+    <div id="transcription"></div>
+    <h2>中文翻译结果：</h2>
+    <div id="translation"></div>
+    <script src="script.js"></script>
+  </body>
+</html>
