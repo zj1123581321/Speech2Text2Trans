@@ -23,19 +23,7 @@ saveApiKeyBtn.addEventListener('click', () => {
   alert('API key 保存成功！');
 });
 
-translateBtn.addEventListener('click', async () => {
-  // 从 local storage 中加载 API key
-  const apiKey = localStorage.getItem('apiKey');
-  if (!apiKey) {
-    alert('请先输入并保存 API key！');
-    return;
-  }
-  
-  // 从文件上传控件中获取音频文件
-  const file = fileUpload.files[0];
-
-  // 调用 https://api.openai.com/v1/audio/translations 完成音频翻译
-
+const transcribeAudio = async (apiKey, file) => {
   // 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
   const formData = new FormData();
   formData.append('file', file);
@@ -50,17 +38,40 @@ translateBtn.addEventListener('click', async () => {
  
   // 提取 whisper 识别的 English 文本
   const responseData = await response.json();
-  transcriptionDiv.innerText =  responseData.text;
-  
+  return responseData.text;
+};
+
+const translateText = async (text) => {
+  // 对 text 进行 url 编码
+  const encodedText = encodeURIComponent(text);
+
   // 调用 Google translate 的 get api 将 English 翻译成 Chinese
-  // 对 responseData.text 进行  url 编码
-  const encodedText = encodeURIComponent(responseData.text);
   const translateResponse = await fetch(`https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=qc&dt=rm&client=gtx&sl=auto&tl=zh-CN&hl=en-US&dj=1&q=${encodedText}&tk=574558.574558`);
   const translateResponseData = await translateResponse.json();
-  console.log(translateResponseData);
+
   // 提取 sentences[*].trans 并合并为一行
   const translation = translateResponseData.sentences.map(sentence => sentence.trans).join('');
 
+  return translation;
+};
+
+translateBtn.addEventListener('click', async () => {
+  // 从 local storage 中加载 API key
+  const apiKey = localStorage.getItem('apiKey');
+  if (!apiKey) {
+    alert('请先输入并保存 API key！');
+    return;
+  }
+  
+  // 从文件上传控件中获取音频文件
+  const file = fileUpload.files[0];
+
+  // 调用 openai 和 google translate 完成音频翻译
+  const transcription = await transcribeAudio(apiKey, file);
+  const translation = await translateText(transcription);
+
   // 在页面上显示转写结果和翻译结果
+  transcriptionDiv.innerText =  transcription;
   translationDiv.innerText = translation;
 });
+
