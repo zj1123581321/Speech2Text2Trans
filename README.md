@@ -1,6 +1,9 @@
 ## Speech2Text2Trans
 Call whisper api to finish transcribing audio to English, call google translate api to finish translating English to Chinese.
+
 用户上传音视频文件，网页会调用 Whipser Api 将其转录为英文文本，然后再调用 Google Translate API 将英文文本翻译为中文。
+
+**由于需要调用 OpenAI 和 Google Translate 的 API ，请确保你本地的网络可以正常访问 Google**
 
 ## 使用场景
 - 从 Whatsapp Web 下载语音文件，查看转写结果(**初次使用会比较慢，请耐心等待**)
