@@ -5,6 +5,7 @@ Call whisper api to finish transcribing audio to English, call google translate 
 ## 使用场景
 - 从 Whatsapp Web 下载语音文件，查看转写结果
 - 下载视频素材，查看口播文案
+- 其他需要获取 Speech2Text 的效果
 
 ## 怎样获取 OpenAI API key
 - 在你拥有一个 OpenAI 账号(即 Chatgpt 账号)之后，打开 https://platform.openai.com/account/api-keys 网址
