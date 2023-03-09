@@ -23,8 +23,8 @@ saveApiKeyBtn.addEventListener('click', () => {
   alert('API key 保存成功！');
 });
 
+// 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
 const transcribeAudio = async (apiKey, file) => {
-  // 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
   const formData = new FormData();
   formData.append('file', file);
   formData.append('model', 'whisper-1');
@@ -36,9 +36,13 @@ const transcribeAudio = async (apiKey, file) => {
     body: formData
   });
  
-  // 提取 whisper 识别的 English 文本
-  const responseData = await response.json();
-  return responseData.text;
+  if (response.ok) { // 检查 status code 是否为 200
+    const responseData = await response.json();
+    return responseData.text;
+    } else {
+    const errorResponse = await response.text();
+    alert(`Error: ${response.status} \n\n${errorResponse}`);
+    }
 };
 
 const translateText = async (text) => {
@@ -47,12 +51,17 @@ const translateText = async (text) => {
 
   // 调用 Google translate 的 get api 将 English 翻译成 Chinese
   const translateResponse = await fetch(`https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=qc&dt=rm&client=gtx&sl=auto&tl=zh-CN&hl=en-US&dj=1&q=${encodedText}&tk=574558.574558`);
-  const translateResponseData = await translateResponse.json();
-
-  // 提取 sentences[*].trans 并合并为一行
-  const translation = translateResponseData.sentences.map(sentence => sentence.trans).join('');
-
-  return translation;
+  
+  if (translateResponse.ok){
+    const translateResponseData = await translateResponse.json();
+    // 提取 sentences[*].trans 并合并为一行
+    const translation = translateResponseData.sentences.map(sentence => sentence.trans).join('');
+    return translation;
+  } else {
+    const errorResponse = await translateResponse.text();
+    alert(`Error: ${response.status} \n\n${errorResponse}`);
+  }
+  
 };
 
 async function convertOggToMp3(file) {
