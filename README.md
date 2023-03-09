@@ -1,12 +1,11 @@
-# Speech2Text2Trans
+## Speech2Text2Trans
 Call whisper api to finish transcribing audio to English, call google translate api to finish translating English to Chinese.
 用户上传音视频文件，网页会调用 Whipser Api 将其转录为英文文本，然后再调用 Google Translate API 将英文文本翻译为中文。
 
-# 使用场景
+## 使用场景
 - 从 Whatsapp Web 下载语音文件，查看转写结果
 - 下载视频素材，查看口播文案
 
-# 使用说明
 ## 怎样获取 OpenAI API key
 - 在你拥有一个 OpenAI 账号(即 Chatgpt 账号)之后，打开 https://platform.openai.com/account/api-keys 网址
 - 点击『Create new secret key』。
