@@ -3,7 +3,7 @@ Call whisper api to finish transcribing audio to English, call google translate 
 用户上传音视频文件，网页会调用 Whipser Api 将其转录为英文文本，然后再调用 Google Translate API 将英文文本翻译为中文。
 
 ## 使用场景
-- 从 Whatsapp Web 下载语音文件，查看转写结果
+- 从 Whatsapp Web 下载语音文件，查看转写结果(**初次使用会比较慢，请耐心等待**)
 - 下载视频素材，查看口播文案
 - 其他需要获取 Speech2Text 的场景
 

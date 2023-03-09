@@ -115,6 +115,8 @@ translateBtn.addEventListener('click', async () => {
   let transcription;
 
   if (file.type === 'audio/ogg') {
+    // 更改 Tab 的标题为"ogg 转换较慢，请耐心等待"
+    document.title = '音频翻译-ogg 转换较慢，请耐心等待';
     // 将OGG文件转换为MP3格式
     const mp3File = await convertOggToMp3(file);
     // 调用openai和google translate完成音频翻译
