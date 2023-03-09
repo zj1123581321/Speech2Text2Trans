@@ -55,6 +55,34 @@ const translateText = async (text) => {
   return translation;
 };
 
+async function convertOggToMp3(file) {
+  // 加载FFmpeg
+  if (!ffmpeg.isLoaded()) {
+    await ffmpeg.load();
+  }
+
+  const { name } = file;
+  const inputPath = `/${name}`;
+  const outputPath = `/${name.replace('.ogg', '')}.mp3`;
+
+  // 将OGG文件从File对象转换为Uint8Array格式
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  // 将Uint8Array格式的文件写入FFmpeg内存中
+  await ffmpeg.FS('writeFile', inputPath, uint8Array);
+
+  // 调用FFmpeg进行转换
+  await ffmpeg.run('-i', inputPath, '-acodec', 'libmp3lame', outputPath);
+
+  // 将转换后的MP3文件从FFmpeg内存中读取到Uint8Array格式中
+  const mp3Data = await ffmpeg.FS('readFile', outputPath);
+  const mp3File = new File([mp3Data.buffer], name.replace('.ogg', '.mp3'), { type: 'audio/mp3' });
+
+  return mp3File;
+}
+
+
 translateBtn.addEventListener('click', async () => {
   // 从 local storage 中加载 API key
   const apiKey = localStorage.getItem('apiKey');
@@ -62,22 +90,31 @@ translateBtn.addEventListener('click', async () => {
     alert('请先输入并保存 API key！');
     return;
   }
-  
-  //https://platform.openai.com/docs/guides/speech-to-text
+
   // 从文件上传控件中获取文件,File uploads are currently limited to 25 MB and the following input file types are supported: mp3, mp4, mpeg, mpga, m4a, wav, and webm.
   const file = fileUpload.files[0];
   if (!file) {
-  alert('请选择一个音视频文件！');
-  return;
-  }
-  
-  if (file.size > 25 * 1024 * 1024) {
-  alert('文件大小不能超过 25MB！');
-  return;
+    alert('请选择一个音视频文件！');
+    return;
   }
 
-  // 调用 openai 和 google translate 完成音频翻译
-  const transcription = await transcribeAudio(apiKey, file);
+  if (file.size > 25 * 1024 * 1024) {
+    alert('文件大小不能超过 25MB！');
+    return;
+  }
+
+  let transcription;
+
+  if (file.type === 'audio/ogg') {
+    // 将OGG文件转换为MP3格式
+    const mp3File = await convertOggToMp3(file);
+    // 调用openai和google translate完成音频翻译
+    transcription = await transcribeAudio(apiKey, mp3File);
+  } else {
+    // 直接调用openai和google translate完成音频翻译
+    transcription = await transcribeAudio(apiKey, file);
+  }
+
   const translation = await translateText(transcription);
 
   // 在页面上显示转写结果和翻译结果
