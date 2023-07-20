@@ -1,4 +1,5 @@
 const apiKeyInput = document.getElementById('api-key-input');
+const apiUrlSelect = document.getElementById('api-url-select');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
 const fileUpload = document.getElementById('file-upload');
 const translateBtn = document.getElementById('translate-btn');
@@ -10,25 +11,31 @@ const apiKey = localStorage.getItem('apiKey');
 if (apiKey) {
   apiKeyInput.value = apiKey;
 }
+const apiUrl = localStorage.getItem('apiUrl');
+if (apiUrl) {
+  apiUrlSelect.value = apiUrl;
+}
 
 // 监听保存 API key 的按钮点击事件
 saveApiKeyBtn.addEventListener('click', () => {
   // 从输入框中获取 API key
   const apiKey = apiKeyInput.value;
+  const apiUrl = apiUrlSelect.value;
   
   // 保存 API key 到 local storage
   localStorage.setItem('apiKey', apiKey);
+  localStorage.setItem('apiUrl', apiUrl);
   
   // 提示用户保存成功
-  alert('API key 保存成功！');
+  alert('配置保存成功！');
 });
 
 // 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
-const transcribeAudio = async (apiKey, file) => {
+const transcribeAudio = async (apiKey,apiUrl,file) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('model', 'whisper-1');
-  const response = await fetch('https://api.openai.com/v1/audio/translations', {
+  const response = await fetch(`${apiUrl}/v1/audio/translations`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`
@@ -120,10 +127,10 @@ translateBtn.addEventListener('click', async () => {
     // 将OGG文件转换为MP3格式
     const mp3File = await convertOggToMp3(file);
     // 调用openai和google translate完成音频翻译
-    transcription = await transcribeAudio(apiKey, mp3File);
+    transcription = await transcribeAudio(apiKey,apiUrl, mp3File);
   } else {
     // 直接调用openai和google translate完成音频翻译
-    transcription = await transcribeAudio(apiKey, file);
+    transcription = await transcribeAudio(apiKey,apiUrl, file);
   }
 
   const translation = await translateText(transcription);

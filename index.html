@@ -40,9 +40,14 @@
 
     <div class="container">
       <h1>音频翻译</h1>
-      <label for="api-key-input">输入 OpenAI API key：</label>
+      <label for="api-key-input">输入 API key：</label>
       <input type="password" id="api-key-input" placeholder="输入您的 API key">
-      <button id="save-api-key-btn">保存 API key</button>
+      <label for="api-url-select">API URL：</label>
+      <select id="api-url-select">
+        <option value="https://api.openai.com">https://api.openai.com</option>
+        <option value="https://api.aiproxy.io">https://api.aiproxy.io</option>
+      </select>
+      <button id="save-api-key-btn">保存配置</button>
       <br>
       <input type="file" id="file-upload" accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg">
       <button id="translate-btn">翻译</button>
@@ -65,6 +70,7 @@
         </ul>
         <h2 id="怎样获取-openai-api-key">怎样获取 OpenAI API key</h2>
         <ul>
+          <h3>官方 Key</h3>
           <li>在你拥有一个 OpenAI 账号(即 Chatgpt 账号)之后，打开 
             <a href="https://platform.openai.com/account/api-keys">https://platform.openai.com/account/api-keys</a> 网址
           </li>
@@ -74,6 +80,9 @@
         <p>
           <img src="Pic01-Apikeys.png" alt="API key">
           </p>
+          <h3>第三方 key</h3>
+          <li>打开 <a href="https://aiproxy.io/?i=lixing">这个第三方的 API 转发网址</a> 充值购买即可，然后更换上方的 API URL 网址</li>
+
           <h2 id="当前支持语言">当前支持语言</h2>
           <p>Afrikaans, Arabic, Armenian, Azerbaijani, Belarusian, Bosnian, Bulgarian, Catalan, Chinese, Croatian, Czech, Danish, Dutch, English, Estonian, Finnish, French, Galician, German, Greek, Hebrew, Hindi, Hungarian, Icelandic, Indonesian, Italian, Japanese, Kannada, Kazakh, Korean, Latvian, Lithuanian, Macedonian, Malay, Marathi, Maori, Nepali, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, Slovak, Slovenian, Spanish, Swahili, Swedish, Tagalog, Tamil, Thai, Turkish, Ukrainian, Urdu, Vietnamese, and Welsh.</p>
           <h2 id="文件大小与格式限制">文件大小与格式限制</h2>
