@@ -51,15 +51,15 @@
       <br>
       <input type="file" id="file-upload" accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg">
       <button id="translate-btn">翻译</button>
-      <h2>英文转写结果：</h2>
+      <h2>文件转写结果：</h2>
       <div id="transcription"></div>
       <h2>中文翻译结果：</h2>
       <div id="translation"></div>
       <hr>
       <div id="readme">
         <h2 id="speech2text2trans">Speech2Text2Trans</h2>
-        <p>Call whisper api to finish transcribing audio to English, call google translate api to finish translating English to Chinese.</p>
-        <p>用户上传音视频文件，网页会调用 Whipser Api 将其转录为英文文本，然后再调用 Google Translate API 将英文文本翻译为中文。</p>
+        <p>Call whisper api to finish transcribing audio to text, call google translate api to finish translating OriText to Chinese.</p>
+        <p>用户上传音视频文件，网页会调用 Whipser Api 将其转录为文本，然后再调用 Google Translate API 将文本翻译为中文。</p>
         <p><strong>由于需要调用 OpenAI 和 Google Translate 的 API ，请确保你本地的网络可以正常访问 Google</strong></p>
         <p> ==> <a href="https://zhanglixing.feishu.cn/wiki/wikcnInjvD87Ox49l0FM8BBVelc"> Quicker 本地版本</a></p>
         <h2 id="使用场景">使用场景</h2>
@@ -96,7 +96,6 @@
           <ul>
             <li>折合人民币大概每分钟 0.04 元。</li>
             <li>非常便宜，大概是 Google Cloud Speech2Text API 价格的 1/4。</li>
-            <li>每个 OpenAI 账号自带的 18$ 大概可以换算成 50 小时的转写时长。</li>
           </ul>
       </div>
     </div>

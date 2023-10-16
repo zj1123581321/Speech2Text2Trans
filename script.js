@@ -35,7 +35,7 @@ const transcribeAudio = async (apiKey,apiUrl,file) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('model', 'whisper-1');
-  const response = await fetch(`${apiUrl}/v1/audio/translations`, {
+  const response = await fetch(`${apiUrl}/v1/audio/transcription`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`
@@ -56,7 +56,7 @@ const translateText = async (text) => {
   // 对 text 进行 url 编码
   const encodedText = encodeURIComponent(text);
 
-  // 调用 Google translate 的 get api 将 English 翻译成 Chinese
+  // 调用 Google translate 的 get api 将原始文本翻译成 Chinese
   const translateResponse = await fetch(`https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=qc&dt=rm&client=gtx&sl=auto&tl=zh-CN&hl=en-US&dj=1&q=${encodedText}&tk=574558.574558`);
   
   if (translateResponse.ok){
