@@ -5,6 +5,7 @@ const fileUpload = document.getElementById('file-upload');
 const translateBtn = document.getElementById('translate-btn');
 const transcriptionDiv = document.getElementById('transcription');
 const translationDiv = document.getElementById('translation');
+const translationDivGPT = document.getElementById('translationGPT');
 
 // 尝试从 local storage 中加载 API key
 const apiKey = localStorage.getItem('apiKey');
@@ -35,7 +36,7 @@ const transcribeAudio = async (apiKey,apiUrl,file) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('model', 'whisper-1');
-  const response = await fetch(`${apiUrl}/v1/audio/transcription`, {
+  const response = await fetch(`${apiUrl}/v1/audio/transcriptions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`
@@ -52,6 +53,7 @@ const transcribeAudio = async (apiKey,apiUrl,file) => {
     }
 };
 
+// 使用 Google translate API 将文本翻译成中文
 const translateText = async (text) => {
   // 对 text 进行 url 编码
   const encodedText = encodeURIComponent(text);
@@ -70,6 +72,42 @@ const translateText = async (text) => {
   }
   
 };
+
+// 使用 GPT 3.5 将文本翻译成中文
+const translateTextGPT = async (text) => {
+  // 构造请求消息，要求模型翻译 text
+  const requestBody = {
+    "model": "gpt-3.5-turbo",
+    "messages": [
+      {
+        "role": "system",
+        "content": "I want you to act as an Chinese translator, spelling corrector and improver. I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in Chinese. I want you to only reply the correction, the improvements and nothing else, do not write explanations"
+      },
+      {
+        "role": "user",
+        "content": `"${text}"`
+      }
+    ]
+  };
+
+  const response = await fetch(`${apiUrl}/v1/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (response.ok) {
+    const responseData = await response.json();
+    return responseData.choices[0].message.content.trim();
+  } else {
+    const errorResponse = await response.text();
+    alert(`Error: ${response.status} \n\n${errorResponse}`);
+  }
+};
+
 
 async function convertOggToMp3(file) {
   // 加载FFmpeg
@@ -133,10 +171,14 @@ translateBtn.addEventListener('click', async () => {
     transcription = await transcribeAudio(apiKey,apiUrl, file);
   }
 
+  // let transcription = "这是一段测试文本，用于测试翻译功能。"
+
   const translation = await translateText(transcription);
+  const translationGPT = await translateTextGPT(transcription);
 
   // 在页面上显示转写结果和翻译结果
   transcriptionDiv.innerText =  transcription;
   translationDiv.innerText = translation;
+  translationDivGPT.innerText = translationGPT;
 });
 
