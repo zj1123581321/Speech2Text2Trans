@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const createCustomAlert = () => {
     const alertContainer = document.createElement('div');
     alertContainer.classList.add('custom-alert-container');
-    alertContainer.style.display = 'none';
+    alertContainer.style.display = 'none'; // 初始状态为隐藏
     alertContainer.style.position = 'fixed';
     alertContainer.style.top = '0';
     alertContainer.style.left = '0';
@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     alertContainer.style.height = '100%';
     alertContainer.style.backgroundColor = 'rgba(0,0,0,0.5)';
     alertContainer.style.zIndex = '1000';
-    alertContainer.style.display = 'flex';
     alertContainer.style.justifyContent = 'center';
     alertContainer.style.alignItems = 'center';
 
@@ -108,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-  // 初始化自定义弹窗
+  // 初始化自定义弹窗，但不显示
   const customAlert = createCustomAlert();
 
   // 监听保存配置按钮点击事件
