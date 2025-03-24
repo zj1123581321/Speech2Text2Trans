@@ -1,193 +1,224 @@
-const apiKeyInput = document.getElementById('api-key-input');
-const apiUrlInput = document.getElementById('api-url-input');
-const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-const fileUpload = document.getElementById('file-upload');
-const translateBtn = document.getElementById('translate-btn');
-const transcriptionDiv = document.getElementById('transcription');
-const translationDiv = document.getElementById('translation');
-const translationDivGPT = document.getElementById('translationGPT');
+// 等待 DOM 加载完成
+document.addEventListener('DOMContentLoaded', () => {
+  // 获取 DOM 元素
+  const apiKeyInput = document.getElementById('api-key-input');
+  const apiUrlInput = document.getElementById('api-url-input');
+  const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+  const fileUpload = document.getElementById('file-upload');
+  const translateBtn = document.getElementById('translate-btn');
+  const transcriptionDiv = document.getElementById('transcription');
+  const translationDiv = document.getElementById('translation');
+  const translationDivGPT = document.getElementById('translationGPT');
 
-// 尝试从 local storage 中加载 API key
-const apiKey = localStorage.getItem('apiKey');
-if (apiKey) {
-  apiKeyInput.value = apiKey;
-}
-const apiUrl = localStorage.getItem('apiUrl');
-if (apiUrl) {
-  apiUrlInput.value = apiUrl;
-  console.log(apiUrl);
-}
-
-// 监听保存 API key 的按钮点击事件
-saveApiKeyBtn.addEventListener('click', () => {
-  // 从输入框中获取 API key
-  const apiKey = apiKeyInput.value;
-  const apiUrl = apiUrlInput.value;
-  
-  // 验证 URL 格式
-  try {
-    new URL(apiUrl);
-  } catch (e) {
-    alert('请输入有效的 API URL！');
-    return;
-  }
-  
-  // 保存 API key 到 local storage
-  localStorage.setItem('apiKey', apiKey);
-  localStorage.setItem('apiUrl', apiUrl);
-  
-  // 提示用户保存成功
-  alert('配置保存成功！');
-});
-
-// 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
-const transcribeAudio = async (apiKey,apiUrl,file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('model', 'whisper-1');
-  const response = await fetch(`${apiUrl}/v1/audio/transcriptions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`
-    } ,
-    body: formData
-  });
- 
-  if (response.ok) { // 检查 status code 是否为 200
-    const responseData = await response.json();
-    return responseData.text;
-    } else {
-    const errorResponse = await response.text();
-    alert(`Error: ${response.status} \n\n${errorResponse}`);
-    }
-};
-
-// 使用 Google translate API 将文本翻译成中文
-const translateText = async (text) => {
-  // 对 text 进行 url 编码
-  const encodedText = encodeURIComponent(text);
-
-  // 调用 Google translate 的 get api 将原始文本翻译成 Chinese
-  const translateResponse = await fetch(`https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=qc&dt=rm&client=gtx&sl=auto&tl=zh-CN&hl=en-US&dj=1&q=${encodedText}&tk=574558.574558`);
-  
-  if (translateResponse.ok){
-    const translateResponseData = await translateResponse.json();
-    // 提取 sentences[*].trans 并合并为一行
-    const translation = translateResponseData.sentences.map(sentence => sentence.trans).join('');
-    return translation;
-  } else {
-    const errorResponse = await translateResponse.text();
-    alert(`Error: ${response.status} \n\n${errorResponse}`);
-  }
-  
-};
-
-// 使用 GPT-4 将文本翻译成中文
-const translateTextGPT = async (text) => {
-  // 构造请求消息，要求模型翻译 text
-  const requestBody = {
-    "model": "gpt-4o",
-    "messages": [
-      {
-        "role": "system",
-        "content": "I want you to act as an Chinese translator, spelling corrector and improver. I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in Chinese. I want you to only reply the correction, the improvements and nothing else, do not write explanations"
-      },
-      {
-        "role": "user",
-        "content": `"${text}"`
-      }
-    ]
+  // 验证所有必需的 DOM 元素是否存在
+  const elements = {
+    apiKeyInput,
+    apiUrlInput,
+    saveApiKeyBtn,
+    fileUpload,
+    translateBtn,
+    transcriptionDiv,
+    translationDiv,
+    translationDivGPT
   };
 
-  const response = await fetch(`${apiUrl}/v1/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(requestBody)
+  // 检查是否有任何元素未找到
+  const missingElements = Object.entries(elements)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingElements.length > 0) {
+    console.error('未找到以下 DOM 元素:', missingElements);
+    return;
+  }
+
+  // 尝试从 local storage 中加载配置
+  const apiKey = localStorage.getItem('apiKey');
+  if (apiKey) {
+    apiKeyInput.value = apiKey;
+  }
+  const apiUrl = localStorage.getItem('apiUrl') || 'https://api.openai.com';
+  if (apiUrl) {
+    apiUrlInput.value = apiUrl;
+  }
+
+  // 监听保存配置按钮点击事件
+  saveApiKeyBtn.addEventListener('click', () => {
+    try {
+      const apiKey = apiKeyInput.value.trim();
+      const apiUrl = apiUrlInput.value.trim() || 'https://api.openai.com';
+      
+      if (!apiKey) {
+        alert('请输入 API Key！');
+        return;
+      }
+      
+      // 验证 URL 格式
+      try {
+        new URL(apiUrl);
+      } catch (e) {
+        alert('请输入有效的 API URL！');
+        return;
+      }
+      
+      // 保存配置到 local storage
+      localStorage.setItem('apiKey', apiKey);
+      localStorage.setItem('apiUrl', apiUrl);
+      
+      alert('配置保存成功！');
+    } catch (error) {
+      console.error('保存配置时出错:', error);
+      alert('保存配置失败，请查看控制台获取详细信息。');
+    }
   });
 
-  if (response.ok) {
-    const responseData = await response.json();
-    return responseData.choices[0].message.content.trim();
-  } else {
-    const errorResponse = await response.text();
-    alert(`Error: ${response.status} \n\n${errorResponse}`);
+  // 发送音频文件和 API key 到 https://api.openai.com/v1/audio/translations 进行翻译
+  const transcribeAudio = async (apiKey,apiUrl,file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model', 'whisper-1');
+    const response = await fetch(`${apiUrl}/v1/audio/transcriptions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`
+      } ,
+      body: formData
+    });
+   
+    if (response.ok) { // 检查 status code 是否为 200
+      const responseData = await response.json();
+      return responseData.text;
+      } else {
+      const errorResponse = await response.text();
+      alert(`Error: ${response.status} \n\n${errorResponse}`);
+      }
+  };
+
+  // 使用 Google translate API 将文本翻译成中文
+  const translateText = async (text) => {
+    // 对 text 进行 url 编码
+    const encodedText = encodeURIComponent(text);
+
+    // 调用 Google translate 的 get api 将原始文本翻译成 Chinese
+    const translateResponse = await fetch(`https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=qc&dt=rm&client=gtx&sl=auto&tl=zh-CN&hl=en-US&dj=1&q=${encodedText}&tk=574558.574558`);
+    
+    if (translateResponse.ok){
+      const translateResponseData = await translateResponse.json();
+      // 提取 sentences[*].trans 并合并为一行
+      const translation = translateResponseData.sentences.map(sentence => sentence.trans).join('');
+      return translation;
+    } else {
+      const errorResponse = await translateResponse.text();
+      alert(`Error: ${response.status} \n\n${errorResponse}`);
+    }
+    
+  };
+
+  // 使用 GPT-4 将文本翻译成中文
+  const translateTextGPT = async (text) => {
+    // 构造请求消息，要求模型翻译 text
+    const requestBody = {
+      "model": "gpt-4o",
+      "messages": [
+        {
+          "role": "system",
+          "content": "I want you to act as an Chinese translator, spelling corrector and improver. I will speak to you in any language and you will detect the language, translate it and answer in the corrected and improved version of my text, in Chinese. I want you to only reply the correction, the improvements and nothing else, do not write explanations"
+        },
+        {
+          "role": "user",
+          "content": `"${text}"`
+        }
+      ]
+    };
+
+    const response = await fetch(`${apiUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (response.ok) {
+      const responseData = await response.json();
+      return responseData.choices[0].message.content.trim();
+    } else {
+      const errorResponse = await response.text();
+      alert(`Error: ${response.status} \n\n${errorResponse}`);
+    }
+  };
+
+  async function convertOggToMp3(file) {
+    // 加载FFmpeg
+    if (!ffmpeg.isLoaded()) {
+      await ffmpeg.load();
+    }
+
+    const { name } = file;
+    const inputPath = `/${name}`;
+    const outputPath = `/${name.replace('.ogg', '')}.mp3`;
+
+    // 将OGG文件从File对象转换为Uint8Array格式
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // 将Uint8Array格式的文件写入FFmpeg内存中
+    await ffmpeg.FS('writeFile', inputPath, uint8Array);
+
+    // 调用FFmpeg进行转换
+    await ffmpeg.run('-i', inputPath, '-acodec', 'libmp3lame', outputPath);
+
+    // 将转换后的MP3文件从FFmpeg内存中读取到Uint8Array格式中
+    const mp3Data = await ffmpeg.FS('readFile', outputPath);
+    const mp3File = new File([mp3Data.buffer], name.replace('.ogg', '.mp3'), { type: 'audio/mp3' });
+
+    return mp3File;
   }
-};
 
+  translateBtn.addEventListener('click', async () => {
+    // 从 local storage 中加载 API key
+    const apiKey = localStorage.getItem('apiKey');
+    if (!apiKey) {
+      alert('请先输入并保存 API key！');
+      return;
+    }
 
-async function convertOggToMp3(file) {
-  // 加载FFmpeg
-  if (!ffmpeg.isLoaded()) {
-    await ffmpeg.load();
-  }
+    // 从文件上传控件中获取文件,File uploads are currently limited to 25 MB and the following input file types are supported: mp3, mp4, mpeg, mpga, m4a, wav, and webm.
+    const file = fileUpload.files[0];
+    if (!file) {
+      alert('请选择一个音视频文件！');
+      return;
+    }
 
-  const { name } = file;
-  const inputPath = `/${name}`;
-  const outputPath = `/${name.replace('.ogg', '')}.mp3`;
+    if (file.size > 25 * 1024 * 1024) {
+      alert('文件大小不能超过 25MB！');
+      return;
+    }
 
-  // 将OGG文件从File对象转换为Uint8Array格式
-  const arrayBuffer = await file.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
+    let transcription;
 
-  // 将Uint8Array格式的文件写入FFmpeg内存中
-  await ffmpeg.FS('writeFile', inputPath, uint8Array);
+    if (file.type === 'audio/ogg') {
+      // 更改 Tab 的标题为"ogg 转换较慢，请耐心等待"
+      document.title = '音频翻译-ogg 转换较慢，请耐心等待';
+      // 将OGG文件转换为MP3格式
+      const mp3File = await convertOggToMp3(file);
+      // 调用openai和google translate完成音频翻译
+      transcription = await transcribeAudio(apiKey,apiUrl, mp3File);
+    } else {
+      // 直接调用openai和google translate完成音频翻译
+      transcription = await transcribeAudio(apiKey,apiUrl, file);
+    }
 
-  // 调用FFmpeg进行转换
-  await ffmpeg.run('-i', inputPath, '-acodec', 'libmp3lame', outputPath);
+    // let transcription = "这是一段测试文本，用于测试翻译功能。"
 
-  // 将转换后的MP3文件从FFmpeg内存中读取到Uint8Array格式中
-  const mp3Data = await ffmpeg.FS('readFile', outputPath);
-  const mp3File = new File([mp3Data.buffer], name.replace('.ogg', '.mp3'), { type: 'audio/mp3' });
+    const translation = await translateText(transcription);
+    const translationGPT = await translateTextGPT(transcription);
 
-  return mp3File;
-}
-
-
-translateBtn.addEventListener('click', async () => {
-  // 从 local storage 中加载 API key
-  const apiKey = localStorage.getItem('apiKey');
-  if (!apiKey) {
-    alert('请先输入并保存 API key！');
-    return;
-  }
-
-  // 从文件上传控件中获取文件,File uploads are currently limited to 25 MB and the following input file types are supported: mp3, mp4, mpeg, mpga, m4a, wav, and webm.
-  const file = fileUpload.files[0];
-  if (!file) {
-    alert('请选择一个音视频文件！');
-    return;
-  }
-
-  if (file.size > 25 * 1024 * 1024) {
-    alert('文件大小不能超过 25MB！');
-    return;
-  }
-
-  let transcription;
-
-  if (file.type === 'audio/ogg') {
-    // 更改 Tab 的标题为"ogg 转换较慢，请耐心等待"
-    document.title = '音频翻译-ogg 转换较慢，请耐心等待';
-    // 将OGG文件转换为MP3格式
-    const mp3File = await convertOggToMp3(file);
-    // 调用openai和google translate完成音频翻译
-    transcription = await transcribeAudio(apiKey,apiUrl, mp3File);
-  } else {
-    // 直接调用openai和google translate完成音频翻译
-    transcription = await transcribeAudio(apiKey,apiUrl, file);
-  }
-
-  // let transcription = "这是一段测试文本，用于测试翻译功能。"
-
-  const translation = await translateText(transcription);
-  const translationGPT = await translateTextGPT(transcription);
-
-  // 在页面上显示转写结果和翻译结果
-  transcriptionDiv.innerText =  transcription;
-  translationDiv.innerText = translation;
-  translationDivGPT.innerText = translationGPT;
+    // 在页面上显示转写结果和翻译结果
+    transcriptionDiv.innerText =  transcription;
+    translationDiv.innerText = translation;
+    translationDivGPT.innerText = translationGPT;
+  });
 });
 
