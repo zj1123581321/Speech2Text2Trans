@@ -119,3 +119,17 @@ h2 {
   background-color: #4CAF50;
   transition: width 0.3s ease;
 }
+
+/* 页脚样式 */
+footer {
+  max-width: 800px;
+  margin: 10px auto;
+  text-align: center;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.update-info {
+  padding: 5px;
+  font-style: italic;
+}
