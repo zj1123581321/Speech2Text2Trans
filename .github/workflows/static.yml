@@ -31,13 +31,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
+      - name: Update version info
+        run: |
+          # 获取当前日期和时间
+          DATE=$(date '+%Y%m%d-%H%M')
+          # 获取短版本的提交哈希
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          # 更新 index.html 中的版本信息
+          sed -i "s|版本: v[0-9.]*|版本: v1.0.0-$COMMIT_HASH|g" index.html
+          sed -i "s|最后更新时间: [0-9-]*|最后更新时间: $DATE|g" index.html
+          
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
           path: '.'
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
