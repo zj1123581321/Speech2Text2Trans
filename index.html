@@ -52,6 +52,12 @@
       <br>
       <input type="file" id="file-upload" accept=".mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg">
       <button id="translate-btn">翻译</button>
+      <div id="progress-container" style="display: none; margin-top: 10px;">
+        <div style="margin-bottom: 5px;">处理进度：<span id="progress-status">等待开始...</span></div>
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
       <h2>文件转写结果：</h2>
       <div id="transcription"></div>
       <h2>中文翻译结果(GPT4)：</h2>
