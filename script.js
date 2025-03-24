@@ -214,6 +214,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const translateTextGPT = async (text) => {
     updateProgress(85, '使用 GPT-4 翻译中...');
     
+    // 从 localStorage 获取最新的 API 配置
+    const currentApiKey = localStorage.getItem('apiKey');
+    const currentApiUrl = localStorage.getItem('apiUrl') || 'https://api.openai.com';
+    
+    if (!currentApiKey || !currentApiUrl) {
+      throw new Error('API 配置不完整，请检查设置');
+    }
+    
+    console.log('GPT翻译使用的配置:', { 
+      apiUrl: currentApiUrl,
+      hasApiKey: !!currentApiKey
+    });
+    
     // 构造请求消息，要求模型翻译 text
     const requestBody = {
       "model": "gpt-4o",
@@ -229,23 +242,35 @@ document.addEventListener('DOMContentLoaded', () => {
       ]
     };
 
-    const response = await fetch(`${apiUrl}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(requestBody)
-    });
+    try {
+      console.log('发送 GPT 翻译请求到:', `${currentApiUrl}/v1/chat/completions`);
+      const response = await fetch(`${currentApiUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${currentApiKey}`
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-    if (response.ok) {
-      const responseData = await response.json();
-      updateProgress(100, '所有翻译完成');
-      return responseData.choices[0].message.content.trim();
-    } else {
-      const errorResponse = await response.text();
-      customAlert.show(`Error: ${response.status} \n\n${errorResponse}`);
-      throw new Error(errorResponse);
+      if (response.ok) {
+        const responseData = await response.json();
+        updateProgress(100, '所有翻译完成');
+        return responseData.choices[0].message.content.trim();
+      } else {
+        const errorResponse = await response.text();
+        console.error('GPT 翻译失败:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          errorResponse
+        });
+        customAlert.show(`GPT 翻译错误 (${response.status}):\n\n${errorResponse}`);
+        throw new Error(`${response.status}: ${errorResponse}`);
+      }
+    } catch (error) {
+      console.error('GPT 翻译请求异常:', error);
+      throw error;
     }
   };
 
@@ -280,14 +305,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   translateBtn.addEventListener('click', async () => {
     try {
-      // 从 local storage 中加载 API key
+      // 从 local storage 中加载 API key 和 URL
       const apiKey = localStorage.getItem('apiKey');
+      const apiUrl = localStorage.getItem('apiUrl');
+      
+      console.log('使用的配置:', { 
+        apiKeyLength: apiKey ? apiKey.length : 0,
+        apiUrl,
+        hasApiKey: !!apiKey,
+        hasApiUrl: !!apiUrl
+      });
+      
       if (!apiKey) {
         customAlert.show('请先输入并保存 API key！');
         return;
       }
 
-      const apiUrl = localStorage.getItem('apiUrl');
       if (!apiUrl) {
         customAlert.show('请先设置 API URL！');
         return;
