@@ -48,14 +48,80 @@ document.addEventListener('DOMContentLoaded', () => {
     apiUrlInput.value = apiUrl;
   }
 
+  // 创建自定义弹窗元素
+  const createCustomAlert = () => {
+    const alertContainer = document.createElement('div');
+    alertContainer.classList.add('custom-alert-container');
+    alertContainer.style.display = 'none';
+    alertContainer.style.position = 'fixed';
+    alertContainer.style.top = '0';
+    alertContainer.style.left = '0';
+    alertContainer.style.width = '100%';
+    alertContainer.style.height = '100%';
+    alertContainer.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    alertContainer.style.zIndex = '1000';
+    alertContainer.style.display = 'flex';
+    alertContainer.style.justifyContent = 'center';
+    alertContainer.style.alignItems = 'center';
+
+    const alertBox = document.createElement('div');
+    alertBox.classList.add('custom-alert-box');
+    alertBox.style.backgroundColor = 'white';
+    alertBox.style.padding = '20px';
+    alertBox.style.borderRadius = '5px';
+    alertBox.style.maxWidth = '400px';
+    alertBox.style.width = '80%';
+    alertBox.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+
+    const alertMessage = document.createElement('div');
+    alertMessage.classList.add('custom-alert-message');
+    alertMessage.style.marginBottom = '15px';
+    alertMessage.style.whiteSpace = 'pre-line';
+
+    const alertButton = document.createElement('button');
+    alertButton.classList.add('custom-alert-button');
+    alertButton.textContent = '确定';
+    alertButton.style.padding = '8px 16px';
+    alertButton.style.backgroundColor = '#4CAF50';
+    alertButton.style.color = 'white';
+    alertButton.style.border = 'none';
+    alertButton.style.borderRadius = '4px';
+    alertButton.style.cursor = 'pointer';
+    alertButton.style.float = 'right';
+    alertButton.onclick = () => {
+      alertContainer.style.display = 'none';
+    };
+
+    alertBox.appendChild(alertMessage);
+    alertBox.appendChild(alertButton);
+    alertContainer.appendChild(alertBox);
+    document.body.appendChild(alertContainer);
+
+    return {
+      show: (message) => {
+        alertMessage.textContent = message;
+        alertContainer.style.display = 'flex';
+      },
+      hide: () => {
+        alertContainer.style.display = 'none';
+      }
+    };
+  };
+
+  // 初始化自定义弹窗
+  const customAlert = createCustomAlert();
+
   // 监听保存配置按钮点击事件
   saveApiKeyBtn.addEventListener('click', () => {
     try {
+      console.log('开始保存配置...');
       const apiKey = apiKeyInput.value.trim();
       const apiUrl = apiUrlInput.value.trim() || 'https://api.openai.com';
       
+      console.log('读取到的配置:', { apiUrl, apiKeyLength: apiKey.length });
+      
       if (!apiKey) {
-        alert('请输入 API Key！');
+        customAlert.show('请输入 API Key！');
         return;
       }
       
@@ -63,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         new URL(apiUrl);
       } catch (e) {
-        alert('请输入有效的 API URL！');
+        console.error('URL 格式错误:', e);
+        customAlert.show('请输入有效的 API URL！');
         return;
       }
       
@@ -71,12 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('apiKey', apiKey);
       localStorage.setItem('apiUrl', apiUrl);
       
-      // 显示详细信息的弹窗
-      const keyLastFour = apiKey.slice(-4); // 获取 API key 的最后四位
-      alert(`配置保存成功！\n\nAPI URL: ${apiUrl}\nAPI Key: ******${keyLastFour}`);
+      // 获取 API key 的最后四位
+      const keyLastFour = apiKey.slice(-4); 
+      console.log('保存成功，准备显示详细信息');
+      
+      // 构建详细消息
+      const detailMessage = `配置保存成功！\n\nAPI URL: ${apiUrl}\nAPI Key: ******${keyLastFour}`;
+      console.log('详细消息:', detailMessage);
+      
+      // 使用自定义弹窗显示消息
+      customAlert.show(detailMessage);
     } catch (error) {
       console.error('保存配置时出错:', error);
-      alert('保存配置失败，请查看控制台获取详细信息。');
+      customAlert.show('保存配置失败，请查看控制台获取详细信息。');
     }
   });
 
@@ -107,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return responseData.text;
     } else {
       const errorResponse = await response.text();
-      alert(`Error: ${response.status} \n\n${errorResponse}`);
+      customAlert.show(`Error: ${response.status} \n\n${errorResponse}`);
       updateProgress(0, '转写失败');
       throw new Error(errorResponse);
     }
@@ -131,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return translation;
     } else {
       const errorResponse = await translateResponse.text();
-      alert(`Error: ${translateResponse.status} \n\n${errorResponse}`);
+      customAlert.show(`Error: ${translateResponse.status} \n\n${errorResponse}`);
       throw new Error(errorResponse);
     }
   };
@@ -170,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return responseData.choices[0].message.content.trim();
     } else {
       const errorResponse = await response.text();
-      alert(`Error: ${response.status} \n\n${errorResponse}`);
+      customAlert.show(`Error: ${response.status} \n\n${errorResponse}`);
       throw new Error(errorResponse);
     }
   };
@@ -209,25 +283,25 @@ document.addEventListener('DOMContentLoaded', () => {
       // 从 local storage 中加载 API key
       const apiKey = localStorage.getItem('apiKey');
       if (!apiKey) {
-        alert('请先输入并保存 API key！');
+        customAlert.show('请先输入并保存 API key！');
         return;
       }
 
       const apiUrl = localStorage.getItem('apiUrl');
       if (!apiUrl) {
-        alert('请先设置 API URL！');
+        customAlert.show('请先设置 API URL！');
         return;
       }
 
       // 从文件上传控件中获取文件
       const file = fileUpload.files[0];
       if (!file) {
-        alert('请选择一个音视频文件！');
+        customAlert.show('请选择一个音视频文件！');
         return;
       }
 
       if (file.size > 25 * 1024 * 1024) {
-        alert('文件大小不能超过 25MB！');
+        customAlert.show('文件大小不能超过 25MB！');
         return;
       }
 
@@ -290,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         console.error('处理过程出错:', error);
         updateProgress(0, '处理失败');
-        alert(`处理失败: ${error.message}`);
+        customAlert.show(`处理失败: ${error.message}`);
       } finally {
         // 恢复按钮状态
         translateBtn.disabled = false;
@@ -299,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       console.error('总体处理失败:', error);
-      alert(`操作失败: ${error.message}`);
+      customAlert.show(`操作失败: ${error.message}`);
       
       // 恢复按钮状态
       translateBtn.disabled = false;
