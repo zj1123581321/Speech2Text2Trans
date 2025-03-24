@@ -1,5 +1,5 @@
 const apiKeyInput = document.getElementById('api-key-input');
-const apiUrlSelect = document.getElementById('api-url-select');
+const apiUrlInput = document.getElementById('api-url-input');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
 const fileUpload = document.getElementById('file-upload');
 const translateBtn = document.getElementById('translate-btn');
@@ -14,14 +14,23 @@ if (apiKey) {
 }
 const apiUrl = localStorage.getItem('apiUrl');
 if (apiUrl) {
-  apiUrlSelect.value = apiUrl;
+  apiUrlInput.value = apiUrl;
+  console.log(apiUrl);
 }
 
 // 监听保存 API key 的按钮点击事件
 saveApiKeyBtn.addEventListener('click', () => {
   // 从输入框中获取 API key
   const apiKey = apiKeyInput.value;
-  const apiUrl = apiUrlSelect.value;
+  const apiUrl = apiUrlInput.value;
+  
+  // 验证 URL 格式
+  try {
+    new URL(apiUrl);
+  } catch (e) {
+    alert('请输入有效的 API URL！');
+    return;
+  }
   
   // 保存 API key 到 local storage
   localStorage.setItem('apiKey', apiKey);
@@ -73,11 +82,11 @@ const translateText = async (text) => {
   
 };
 
-// 使用 GPT 3.5 将文本翻译成中文
+// 使用 GPT-4 将文本翻译成中文
 const translateTextGPT = async (text) => {
   // 构造请求消息，要求模型翻译 text
   const requestBody = {
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-4o",
     "messages": [
       {
         "role": "system",
