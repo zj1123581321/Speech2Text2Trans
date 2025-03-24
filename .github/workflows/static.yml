@@ -41,6 +41,8 @@ jobs:
           # 更新 index.html 中的版本信息
           sed -i "s|版本: v[0-9.]*|版本: v1.0.0-$COMMIT_HASH|g" index.html
           sed -i "s|最后更新时间: [0-9-]*|最后更新时间: $DATE|g" index.html
+          # 更新脚本引用添加版本号防止缓存
+          sed -i "s|script.js?v=[0-9-]*|script.js?v=$DATE-$COMMIT_HASH|g" index.html
           
       - name: Setup Pages
         uses: actions/configure-pages@v5
